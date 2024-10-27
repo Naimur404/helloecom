@@ -38,7 +38,7 @@ class SystemPanelSection extends PanelSection
                     ? PanelSectionItem::make('updater')
                     ->setTitle(trans('core/setting::setting.panel.system_updater'))
                     ->withIcon('ti ti-refresh')
-                    ->withDescription(trans('core/setting::setting.panel.system_updater_description'))
+                    // ->withDescription(trans('core/setting::setting.panel.system_updater_description'))
                     ->withPriority(9999)
                     ->withRoute('system.updater')
                     : null,

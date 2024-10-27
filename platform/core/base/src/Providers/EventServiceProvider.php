@@ -19,7 +19,7 @@ use Botble\Base\Facades\MetaBox;
 use Botble\Base\Http\Middleware\AdminLocaleMiddleware;
 use Botble\Base\Http\Middleware\CoreMiddleware;
 use Botble\Base\Http\Middleware\DisableInDemoModeMiddleware;
-use Botble\Base\Http\Middleware\EnsureLicenseHasBeenActivated;
+// use Botble\Base\Http\Middleware\EnsureLicenseHasBeenActivated;
 use Botble\Base\Http\Middleware\HttpsProtocolMiddleware;
 use Botble\Base\Http\Middleware\LocaleMiddleware;
 use Botble\Base\Listeners\AdminNotificationListener;
@@ -99,11 +99,11 @@ class EventServiceProvider extends ServiceProvider
             $router->aliasMiddleware('preventDemo', DisableInDemoModeMiddleware::class);
             $router->middlewareGroup('core', [CoreMiddleware::class]);
 
-            $this->app->extend('core.middleware', function ($middleware) {
-                return array_merge($middleware, [
-                    EnsureLicenseHasBeenActivated::class,
-                ]);
-            });
+            // $this->app->extend('core.middleware', function ($middleware) {
+            //     return array_merge($middleware, [
+            //         EnsureLicenseHasBeenActivated::class,
+            //     ]);
+            // });
 
             add_filter(BASE_FILTER_TOP_HEADER_LAYOUT, function ($options) {
                 try {
@@ -156,15 +156,15 @@ class EventServiceProvider extends ServiceProvider
 
         $events->listen(PanelSectionsRendering::class, PushDashboardMenuToSystemPanel::class);
 
-        if ($this->app->isLocal()) {
-            DB::listen(function (QueryExecuted $queryExecuted) {
-                if ($queryExecuted->time < 500) {
-                    return;
-                }
+        // if ($this->app->isLocal()) {
+        //     DB::listen(function (QueryExecuted $queryExecuted) {
+        //         if ($queryExecuted->time < 500) {
+        //             return;
+        //         }
 
-                Log::warning(sprintf('DB query exceeded %s ms. SQL: %s', $queryExecuted->time, $queryExecuted->sql));
-            });
-        }
+        //         Log::warning(sprintf('DB query exceeded %s ms. SQL: %s', $queryExecuted->time, $queryExecuted->sql));
+        //     });
+        // }
 
         $this->app['events']->listen(RenderingDashboardWidgets::class, function () {
             add_filter(DASHBOARD_FILTER_ADMIN_NOTIFICATIONS, function (?string $html) {

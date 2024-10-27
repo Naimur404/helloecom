@@ -26,7 +26,7 @@ class CommandServiceProvider extends ServiceProvider
         }
 
         $this->commands([
-            ActivateLicenseCommand::class,
+            // ActivateLicenseCommand::class,
             CleanupSystemCommand::class,
             ClearExpiredCacheCommand::class,
             ClearLogCommand::class,

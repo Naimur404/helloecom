@@ -12,7 +12,7 @@ return [
     'version' => 'Version',
     'rating' => 'Rating',
     'last_update' => 'Last update',
-    'license' => 'License',
+    // 'license' => 'License',
     'minimum_core_version' => 'Minimum core version',
     'compatible_version' => 'Compatible with your version',
     'incompatible_version' => 'Incompatible with your version',

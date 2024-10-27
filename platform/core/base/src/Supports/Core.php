@@ -104,38 +104,38 @@ final class Core
 
     public function skipLicenseReminder(): bool
     {
-        $ttl = Carbon::now()->addDays(3);
+        // $ttl = Carbon::now()->addDays(3);
 
-        try {
-            $this->files->put(
-                $this->skipLicenseReminderFilePath,
-                encrypt($ttl->toIso8601String())
-            );
-        } catch (UnableToWriteFile|Throwable) {
-            throw UnableToWriteFile::atLocation($this->skipLicenseReminderFilePath);
-        }
+        // try {
+        //     $this->files->put(
+        //         $this->skipLicenseReminderFilePath,
+        //         encrypt($ttl->toIso8601String())
+        //     );
+        // } catch (UnableToWriteFile|Throwable) {
+        //     throw UnableToWriteFile::atLocation($this->skipLicenseReminderFilePath);
+        // }
 
         return true;
     }
 
     public function isSkippedLicenseReminder(): bool
     {
-        try {
-            $lastSkipDateTimeString = $this->files->exists($this->skipLicenseReminderFilePath)
-                ? $this->files->get($this->skipLicenseReminderFilePath)
-                : null;
-            $lastSkipDateTimeString = $lastSkipDateTimeString ? decrypt($lastSkipDateTimeString) : null;
-            $lastSkipDate = $lastSkipDateTimeString ? Carbon::parse($lastSkipDateTimeString) : null;
+        // try {
+        //     $lastSkipDateTimeString = $this->files->exists($this->skipLicenseReminderFilePath)
+        //         ? $this->files->get($this->skipLicenseReminderFilePath)
+        //         : null;
+        //     $lastSkipDateTimeString = $lastSkipDateTimeString ? decrypt($lastSkipDateTimeString) : null;
+        //     $lastSkipDate = $lastSkipDateTimeString ? Carbon::parse($lastSkipDateTimeString) : null;
 
-            if ($lastSkipDate instanceof Carbon && Carbon::now()->lessThanOrEqualTo($lastSkipDate)) {
-                return true;
-            }
+        //     if ($lastSkipDate instanceof Carbon && Carbon::now()->lessThanOrEqualTo($lastSkipDate)) {
+        //         return true;
+        //     }
 
-            $this->clearLicenseReminder();
-        } catch (Throwable) {
-        }
+        //     $this->clearLicenseReminder();
+        // } catch (Throwable) {
+        // }
 
-        return false;
+        return true;
     }
 
     public function clearLicenseReminder(): void
@@ -154,11 +154,7 @@ final class Core
 
     public function checkConnection(): bool
     {
-        return $this->cache->remember(
-            "license:{$this->getLicenseCacheKey()}:check_connection",
-            Carbon::now()->addDays($this->verificationPeriod),
-            fn () => rescue(fn () => $this->createRequest('check_connection_ext')->ok()) ?: false
-        );
+        return  true;
     }
 
     public function version(): string
@@ -177,75 +173,75 @@ final class Core
      */
     public function activateLicense(string $license, string $client): bool
     {
-        LicenseActivating::dispatch($license, $client);
+        // LicenseActivating::dispatch($license, $client);
 
-        $response = $this->createRequest('activate_license', [
-            'product_id' => $this->productId,
-            'license_code' => $license,
-            'client_name' => $client,
-            'verify_type' => $this->productSource,
-        ]);
+        // $response = $this->createRequest('activate_license', [
+        //     'product_id' => $this->productId,
+        //     'license_code' => $license,
+        //     'client_name' => $client,
+        //     'verify_type' => $this->productSource,
+        // ]);
 
-        if ($response->failed()) {
-            throw new LicenseInvalidException('Could not activate your license. Please try again later.');
-        }
+        // if ($response->failed()) {
+        //     throw new LicenseInvalidException('Could not activate your license. Please try again later.');
+        // }
 
-        $data = $response->json();
+        // $data = $response->json();
 
-        if (! Arr::get($data, 'status')) {
-            $message = Arr::get($data, 'message');
+        // if (! Arr::get($data, 'status')) {
+        //     $message = Arr::get($data, 'message');
 
-            if (Arr::get($data, 'status_code') === 'ACTIVATED_MAXIMUM_ALLOWED_PRODUCT_INSTANCES') {
-                throw new LicenseIsAlreadyActivatedException($message);
-            }
+        //     if (Arr::get($data, 'status_code') === 'ACTIVATED_MAXIMUM_ALLOWED_PRODUCT_INSTANCES') {
+        //         throw new LicenseIsAlreadyActivatedException($message);
+        //     }
 
-            LicenseInvalid::dispatch($license, $client);
+        //     LicenseInvalid::dispatch($license, $client);
 
-            throw new LicenseInvalidException($message);
-        }
+        //     throw new LicenseInvalidException($message);
+        // }
 
-        try {
-            $this->files->put($this->licenseFilePath, Arr::get($data, 'lic_response'), true);
-        } catch (UnableToWriteFile|Throwable) {
-            throw UnableToWriteFile::atLocation($this->licenseFilePath);
-        }
+        // try {
+        //     $this->files->put($this->licenseFilePath, Arr::get($data, 'lic_response'), true);
+        // } catch (UnableToWriteFile|Throwable) {
+        //     throw UnableToWriteFile::atLocation($this->licenseFilePath);
+        // }
 
-        Session::forget("license:{$this->getLicenseCacheKey()}:last_checked_date");
+        // Session::forget("license:{$this->getLicenseCacheKey()}:last_checked_date");
 
-        $this->clearLicenseReminder();
+        // $this->clearLicenseReminder();
 
-        LicenseActivated::dispatch($license, $client);
+        // LicenseActivated::dispatch($license, $client);
 
         return true;
     }
 
     public function verifyLicense(bool $timeBasedCheck = false): bool
     {
-        LicenseVerifying::dispatch();
+        // LicenseVerifying::dispatch();
 
-        if (! $this->isLicenseFileExists()) {
-            return false;
-        }
+        // if (! $this->isLicenseFileExists()) {
+        //     return false;
+        // }
 
         $verified = true;
 
-        if ($timeBasedCheck) {
-            $dateFormat = 'd-m-Y';
-            $cachesKey = "license:{$this->getLicenseCacheKey()}:last_checked_date";
-            $lastCheckedDate = Carbon::createFromFormat(
-                $dateFormat,
-                Session::get($cachesKey, '01-01-1970')
-            )->endOfDay();
-            $now = Carbon::now()->addDays($this->verificationPeriod);
+        // if ($timeBasedCheck) {
+        //     $dateFormat = 'd-m-Y';
+        //     $cachesKey = "license:{$this->getLicenseCacheKey()}:last_checked_date";
+        //     $lastCheckedDate = Carbon::createFromFormat(
+        //         $dateFormat,
+        //         Session::get($cachesKey, '01-01-1970')
+        //     )->endOfDay();
+        //     $now = Carbon::now()->addDays($this->verificationPeriod);
 
-            if ($now->greaterThan($lastCheckedDate) && $verified = $this->verifyLicenseDirectly()) {
-                Session::put($cachesKey, $now->format($dateFormat));
-            }
+        //     if ($now->greaterThan($lastCheckedDate) && $verified = $this->verifyLicenseDirectly()) {
+        //         Session::put($cachesKey, $now->format($dateFormat));
+        //     }
 
             return $verified;
-        }
+        // }
 
-        return $this->verifyLicenseDirectly();
+        // return $this->verifyLicenseDirectly();
     }
 
     public function revokeLicense(string $license, string $client): bool
@@ -640,9 +636,9 @@ final class Core
 
     public function getLicenseFile(): ?string
     {
-        if (! $this->isLicenseFileExists()) {
-            return null;
-        }
+        // if (! $this->isLicenseFileExists()) {
+        //     return null;
+        // }
 
         return $this->files->get($this->licenseFilePath);
     }

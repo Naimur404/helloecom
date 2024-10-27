@@ -9,8 +9,8 @@ class LicenseActivating
     use Dispatchable;
 
     public function __construct(
-        public string $licenseKey,
-        public string $licenseName,
+        // public string $licenseKey,
+        // public string $licenseName,
     ) {
     }
 }
